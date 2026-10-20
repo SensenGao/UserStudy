@@ -7,7 +7,8 @@ An anonymous, blinded, paired video quality study. The server holds50 fixed case
 - Random participant IDs; no registration or personal information required.
 - Ten fixed cases per participant, with balanced exposure across the50-case pool.
 - Independently randomized A/B order, balanced five/five within each participant's assignments.
-- Synchronized reference/A/B playback, replay, slow motion, frame stepping, zoom and fullscreen. All three pause together during buffering and resume when ready.
+- The current reference/A/B triplet downloads completely before playback, with visible download progress. The next triplet preloads while reviewing; an in-memory cache retains at most six clips. Playback and seeking use complete local blobs rather than live network streams.
+- Synchronized reference/A/B playback, replay, slow motion, frame stepping, zoom and fullscreen. All three pause together during decoding waits and resume when ready.
 - Each trial displays its generation prompt, rendered as plain text.
 - English and Chinese interfaces, mobile layout, and automatic durable vote saving.
 - Participants judge A/B clarity, detail, naturalness, artifacts and temporal stability. The reference is available for viewing; similarity to it is not an evaluation criterion.

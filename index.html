@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="description" content="匿名视频质量评估。对照同一参考视频，选择你更喜欢的版本。">
-  <title>Video Quality Study</title><link rel="stylesheet" href="styles.css?v=20261020-prompt-buffer">
+  <title>Video Quality Study</title><link rel="stylesheet" href="styles.css?v=20261020-full-buffer">
 </head>
 <body>
   <header><a class="brand" href="./"><span class="mark">V</span><span>VIDEO QUALITY <b>STUDY</b></span></a><div class="header-end"><span id="participant-id"></span><button id="language" aria-label="Switch language">EN</button></div></header>
@@ -27,6 +27,7 @@
         <div class="pair-grid"><div class="pane"><div class="pane-label"><b>A</b><span data-i18n="versionA">版本 A</span></div><div class="video-box"><video id="a-video" muted playsinline preload="auto"></video></div></div><div class="pane"><div class="pane-label"><b>B</b><span data-i18n="versionB">版本 B</span></div><div class="video-box"><video id="b-video" muted playsinline preload="auto"></video></div></div></div>
         <div class="transport"><button id="play" disabled aria-label="Play">▶</button><span id="time">0.00 / 5.04 s</span><input id="timeline" type="range" min="0" max="5.04" step="0.001" value="0" aria-label="Video timeline" disabled><select id="speed" aria-label="Playback speed"><option value="1">1×</option><option value="0.5">0.5×</option><option value="0.25">0.25×</option></select><button id="step-back" aria-label="Previous frame">‹</button><button id="step-forward" aria-label="Next frame">›</button></div>
         <p id="video-status" class="video-status" role="status"></p>
+        <button id="retry-media" hidden>重新加载 / Retry</button>
       </section>
       <section class="decision"><p data-i18n="question">哪个版本的画面质量更好？</p><div class="choice-grid"><button id="choose-a" data-choice="A" disabled><b>A</b><span data-i18n="preferA">我选择 A</span></button><button id="choose-b" data-choice="B" disabled><b>B</b><span data-i18n="preferB">我选择 B</span></button></div><p id="save-status" role="status"></p></section>
       <nav class="trial-nav"><button id="previous" data-i18n="previous">← 上一组</button><div id="trial-dots" aria-label="Trial navigation"></div><button id="next" data-i18n="next">下一组 →</button></nav>
@@ -36,6 +37,6 @@
     <section id="complete" class="complete" hidden><span class="complete-mark">✓</span><p class="eyebrow">10 / 10 · SAVED</p><h1 data-i18n="thanks">感谢你的观察。</h1><p data-i18n="doneCopy">你的 10 组选择已全部保存。感谢你参与这次视频质量评估。</p><p id="complete-id"></p><div class="complete-actions"><button id="review" class="primary" data-i18n="review">回看我的选择</button><button id="restart-complete" data-i18n="restart">再填写一份</button></div><p class="restart-note" data-i18n="restartNote">已有答案会保留；重新填写会分配新编号和10组视频。</p><p id="restart-status" role="status"></p></section>
   </main>
   <footer><span>VIDEO QUALITY STUDY</span><span data-i18n="footer">匿名参与 · 自动保存 · 约 3–5 分钟</span></footer>
-  <script src="config.js"></script><script type="module" src="app.js?v=20261020-prompt-buffer"></script>
+  <script src="config.js"></script><script type="module" src="app.js?v=20261020-full-buffer"></script>
 </body>
 </html>

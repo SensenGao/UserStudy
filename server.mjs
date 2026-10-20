@@ -148,7 +148,7 @@ export function createStudyServer({root,port=8900,allowOrigins=[]}={}){
       const files={'/':'index.html','/index.html':'index.html','/app.js':'app.js','/styles.css':'styles.css','/config.js':'config.js'};
       const name=files[url.pathname];if(!name){res.writeHead(404).end('Not found');return;}
       const type=name.endsWith('.html')?'text/html; charset=utf-8':name.endsWith('.css')?'text/css; charset=utf-8':'text/javascript; charset=utf-8';
-      if(name==='index.html')res.setHeader('Content-Security-Policy',"default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self' https:; media-src 'self' https:; img-src 'self' data:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'");
+      if(name==='index.html')res.setHeader('Content-Security-Policy',"default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self' https:; media-src 'self' https: blob:; img-src 'self' data:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'");
       streamFile(req,res,path.join(here,name),type);
     }catch(error){console.error('Request failed:',error.message);if(!res.headersSent)sendJSON(res,400,{error:'Request could not be processed'});else res.destroy();}
   });
