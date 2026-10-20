@@ -9,6 +9,7 @@ An anonymous, blinded, paired video quality study. The server holds50 fixed case
 - Independently randomized A/B order, balanced five/five within each participant's assignments.
 - Synchronized reference/A/B playback, replay, slow motion, frame stepping, zoom and fullscreen.
 - English and Chinese interfaces, mobile layout, and automatic durable vote saving.
+- Participants judge A/B clarity, detail, naturalness, artifacts and temporal stability. The reference is available for viewing; similarity to it is not an evaluation criterion.
 - Resume keys retain assignments and choices across reloads and server restarts.
 - Method names, source paths, original sample numbers, mappings and results stay on the server. Participant-facing media addresses use signed, opaque assignment IDs.
 - Only the shared121-frame,24fps interval is evaluated. Playback does not include any format-adaptation tail frames.
