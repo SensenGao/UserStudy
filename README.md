@@ -7,10 +7,13 @@ An anonymous, blinded, paired video quality study. The server holds50 fixed case
 - Random participant IDs; no registration or personal information required.
 - Ten fixed cases per participant, with balanced exposure across the50-case pool.
 - Independently randomized A/B order, balanced five/five within each participant's assignments.
-- Synchronized reference/A/B playback, replay, slow motion, frame stepping, zoom and fullscreen.
+- Synchronized reference/A/B playback, replay, slow motion, frame stepping, zoom and fullscreen. All three pause together during buffering and resume when ready.
+- Each trial displays its generation prompt, rendered as plain text.
 - English and Chinese interfaces, mobile layout, and automatic durable vote saving.
 - Participants judge A/B clarity, detail, naturalness, artifacts and temporal stability. The reference is available for viewing; similarity to it is not an evaluation criterion.
 - Resume keys retain assignments and choices across reloads and server restarts.
+- Start another response creates a new participant and ten trials while retaining the previous answers.
+- Vote exports distinguish original and approximately10MB web media profiles. Existing results keep their original profile.
 - Method names, source paths, original sample numbers, mappings and results stay on the server. Participant-facing media addresses use signed, opaque assignment IDs.
 - Only the shared121-frame,24fps interval is evaluated. Playback does not include any format-adaptation tail frames.
 
@@ -27,6 +30,8 @@ The private directory contains `study-manifest.json`, the media, `study.sqlite` 
 
 The default address is `http://127.0.0.1:8900`. Set `STUDY_HOST=0.0.0.0` only when deploying behind your own HTTPS proxy. Mount the private directory as persistent storage when using the Dockerfile.
 
+Optional `prompts` in the private manifest maps case IDs to generation prompt text. This metadata can be updated without changing case assignments. An optional private `study-media-delivery.json` maps existing local media paths to HTTPS original-file URLs; A/B mappings remain unchanged and missing entries fall back to local streaming.
+
 `config.js` points the static GitHub Pages frontend at the study API. Local previews use the same-origin API. The static frontend alone does not allocate trials or save votes; the backend and persistent storage must remain online. A temporary public tunnel is suitable for reviewing the site; long-running data collection should use a stable HTTPS host or a named tunnel with a fixed domain.
 
 ## Validate and export
@@ -38,4 +43,4 @@ STUDY_PRIVATE_ROOT=/path/to/private-study npm run export -- /path/to/private/res
 
 The export is an owner-side command. It includes private A/B mappings and resolved method choices. Keep the export outside this repository. There is no public results or method-mapping endpoint.
 
-API credentials are used by the separate offline generation process. They are never needed by participants or shipped to the frontend. Media delivery removes audio and descriptive container metadata while copying the encoded video stream, preserving the compared pictures.
+API credentials are used by the separate offline generation process. They are never needed by participants or shipped to the frontend. Original archival videos remain unchanged. Optional `study-web-media.json` maps original paths to CPU-encoded web copies; signed URLs include the profile so caches cannot combine original and web bytes. A/B web copies use the same H.264 two-pass15Mbps policy, retain2560×1440 and24fps, and include the shared121-frame interval.

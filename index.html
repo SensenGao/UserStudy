@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="description" content="匿名视频质量评估。对照同一参考视频，选择你更喜欢的版本。">
-  <title>Video Quality Study</title><link rel="stylesheet" href="styles.css">
+  <title>Video Quality Study</title><link rel="stylesheet" href="styles.css?v=20261020-prompt-buffer">
 </head>
 <body>
   <header><a class="brand" href="./"><span class="mark">V</span><span>VIDEO QUALITY <b>STUDY</b></span></a><div class="header-end"><span id="participant-id"></span><button id="language" aria-label="Switch language">EN</button></div></header>
@@ -20,6 +20,7 @@
     </section>
     <section id="study" hidden>
       <div class="study-heading"><div><p class="eyebrow" data-i18n="studyEyebrow">YOUR PERSPECTIVE, ONE PAIR AT A TIME</p><h1><span data-i18n="pair">第</span> <span id="trial-number">01</span> <span class="total">/ 10</span></h1></div><div class="progress-copy"><span id="progress-text"></span><div class="progress-track"><i id="progress-bar"></i></div></div></div>
+      <details id="prompt-panel" class="prompt-panel" open><summary data-i18n="prompt">生成提示词 · Prompt</summary><p id="prompt-text"></p></details>
       <div class="reference-wrap"><div class="reference-label"><span data-i18n="reference">参考视频</span><button id="reference-toggle" class="text-button" data-i18n="hideReference">收起参考</button></div><div id="reference-frame" class="reference-frame"><video id="reference-video" muted playsinline preload="auto"></video></div></div>
       <section id="viewer" class="viewer" aria-label="Video comparison">
         <div class="viewer-tools"><span data-i18n="synced">三段视频同步播放</span><div><button data-zoom="1" class="active" data-i18n="fullFrame">全画面</button><button data-zoom="2">2×</button><button data-zoom="4">4×</button><button id="fullscreen" aria-label="Fullscreen">⛶</button></div></div>
@@ -30,10 +31,11 @@
       <section class="decision"><p data-i18n="question">哪个版本的画面质量更好？</p><div class="choice-grid"><button id="choose-a" data-choice="A" disabled><b>A</b><span data-i18n="preferA">我选择 A</span></button><button id="choose-b" data-choice="B" disabled><b>B</b><span data-i18n="preferB">我选择 B</span></button></div><p id="save-status" role="status"></p></section>
       <nav class="trial-nav"><button id="previous" data-i18n="previous">← 上一组</button><div id="trial-dots" aria-label="Trial navigation"></div><button id="next" data-i18n="next">下一组 →</button></nav>
       <p class="hint" data-i18n="hint">可反复播放、慢放或放大查看。没有标准答案，请按自己的视觉感受选择。</p>
+      <button id="restart-current" class="reset-button" data-i18n="restart">再填写一份</button>
     </section>
-    <section id="complete" class="complete" hidden><span class="complete-mark">✓</span><p class="eyebrow">10 / 10 · SAVED</p><h1 data-i18n="thanks">感谢你的观察。</h1><p data-i18n="doneCopy">你的 10 组选择已全部保存。感谢你参与这次视频质量评估。</p><p id="complete-id"></p><button id="review" class="primary" data-i18n="review">回看我的选择</button></section>
+    <section id="complete" class="complete" hidden><span class="complete-mark">✓</span><p class="eyebrow">10 / 10 · SAVED</p><h1 data-i18n="thanks">感谢你的观察。</h1><p data-i18n="doneCopy">你的 10 组选择已全部保存。感谢你参与这次视频质量评估。</p><p id="complete-id"></p><div class="complete-actions"><button id="review" class="primary" data-i18n="review">回看我的选择</button><button id="restart-complete" data-i18n="restart">再填写一份</button></div><p class="restart-note" data-i18n="restartNote">已有答案会保留；重新填写会分配新编号和10组视频。</p><p id="restart-status" role="status"></p></section>
   </main>
   <footer><span>VIDEO QUALITY STUDY</span><span data-i18n="footer">匿名参与 · 自动保存 · 约 3–5 分钟</span></footer>
-  <script src="config.js"></script><script type="module" src="app.js?v=20261020-ready"></script>
+  <script src="config.js"></script><script type="module" src="app.js?v=20261020-prompt-buffer"></script>
 </body>
 </html>

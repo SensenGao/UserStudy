@@ -24,6 +24,7 @@ export function createStudyServer({root,port=8900,allowOrigins=[]}={}){
   const secret=fs.readFileSync(secretFile,'utf8');
   const db=new DatabaseSync(path.join(root,'study.sqlite'));
   db.exec(fs.readFileSync(path.join(here,'schema.sql'),'utf8'));
+  if(!db.prepare('PRAGMA table_info(votes)').all().some(c=>c.name==='media_profile'))db.exec("ALTER TABLE votes ADD COLUMN media_profile TEXT NOT NULL DEFAULT 'original'");
   const manifestFile=path.join(root,'study-manifest.json');
   let manifest={cases:[],active:false},lastManifest='';
   function refresh(){
@@ -51,15 +52,22 @@ export function createStudyServer({root,port=8900,allowOrigins=[]}={}){
     const token=(req.headers.authorization||'').replace(/^Bearer /,'');
     return token?db.prepare('SELECT id FROM participants WHERE token_hash=?').get(digest(token)):null;
   }
-  function mediaURL(assignment,slot){
+  function mediaURL(assignment,slot,variant=''){
     const expiry=Math.floor(Date.now()/1000)+86400;
-    return `/api/media/${assignment}/${slot}?expires=${expiry}&sig=${hmac(assignment+'|'+slot+'|'+expiry)}`;
+    return `/api/media/${assignment}/${slot}?expires=${expiry}${variant?'&v='+variant:''}&sig=${hmac(assignment+'|'+slot+'|'+expiry+(variant?'|'+variant:''))}`;
+  }
+  function deliveryMap(name='study-media-delivery.json'){
+    const file=path.join(root,name);
+    return fs.existsSync(file)?JSON.parse(fs.readFileSync(file,'utf8')):{};
   }
   function responseFor(id,token){
-    const rows=db.prepare('SELECT a.id,a.ordinal,c.duration,v.choice FROM assignments a JOIN cases c ON c.id=a.case_id LEFT JOIN votes v ON v.assignment_id=a.id WHERE a.participant_id=? ORDER BY a.ordinal').all(id);
+    refresh();const delivery=deliveryMap(),web=deliveryMap('study-web-media.json');
+    const rows=db.prepare('SELECT a.id,a.case_id,a.flip,a.ordinal,c.duration,c.reference_path,c.first_path,c.second_path,v.choice FROM assignments a JOIN cases c ON c.id=a.case_id LEFT JOIN votes v ON v.assignment_id=a.id WHERE a.participant_id=? ORDER BY a.ordinal').all(id);
+    const address=(r,slot,file)=>{const remote=delivery[file];return typeof remote==='string'&&remote.startsWith('https://')?remote:mediaURL(r.id,slot,web[file]?'web10-v1':'');};
     return {participant_id:id,token,trial_count:rows.length,completed_count:rows.filter(r=>r.choice).length,
       trials:rows.map(r=>({id:r.id,ordinal:r.ordinal,duration:r.duration,choice:r.choice??null,
-        reference:mediaURL(r.id,'reference'),A:mediaURL(r.id,'A'),B:mediaURL(r.id,'B')}))};
+        prompt:manifest.prompts?.[r.case_id]||'',media_profile:web[r.first_path]&&web[r.second_path]?'web10-v1':'original',reference:address(r,'reference',r.reference_path),
+        A:address(r,'A',r.flip?r.second_path:r.first_path),B:address(r,'B',r.flip?r.first_path:r.second_path)}))};
   }
   function session(nonce){
     if(typeof nonce!=='string'||!/^[a-zA-Z0-9_-]{32,160}$/.test(nonce))throw Error('Invalid resume key');
@@ -121,17 +129,20 @@ export function createStudyServer({root,port=8900,allowOrigins=[]}={}){
         const a=db.prepare('SELECT id FROM assignments WHERE id=? AND participant_id=?').get(b.assignment_id,p.id);
         if(!a||!['A','B'].includes(b.choice)){sendJSON(res,400,{error:'Invalid vote'});return;}
         const elapsed=Math.max(0,Math.min(3600000,Number(b.elapsed_ms)||0));
-        db.prepare('INSERT INTO votes(assignment_id,choice,elapsed_ms) VALUES(?,?,?) ON CONFLICT(assignment_id) DO UPDATE SET choice=excluded.choice,elapsed_ms=excluded.elapsed_ms,updated_at=CURRENT_TIMESTAMP').run(a.id,b.choice,elapsed);
+        const profile=b.media_profile||'original';if(!['original','web10-v1'].includes(profile)){sendJSON(res,400,{error:'Invalid media profile'});return;}
+        db.prepare('INSERT INTO votes(assignment_id,choice,elapsed_ms,media_profile) VALUES(?,?,?,?) ON CONFLICT(assignment_id) DO UPDATE SET choice=excluded.choice,elapsed_ms=excluded.elapsed_ms,media_profile=excluded.media_profile,updated_at=CURRENT_TIMESTAMP').run(a.id,b.choice,elapsed,profile);
         sendJSON(res,200,{saved:true,assignment_id:a.id,choice:b.choice});return;
       }
       const media=/^\/api\/media\/([a-zA-Z0-9_-]+)\/(reference|A|B)$/.exec(url.pathname);
       if(media&&['GET','HEAD'].includes(req.method)){
-        const [,id,slot]=media,expiry=Number(url.searchParams.get('expires'));
-        if(!Number.isInteger(expiry)||expiry<Math.floor(Date.now()/1000)||!equal(url.searchParams.get('sig'),hmac(id+'|'+slot+'|'+expiry))){res.writeHead(403).end();return;}
+        const [,id,slot]=media,expiry=Number(url.searchParams.get('expires')),variant=url.searchParams.get('v')||'';
+        if(!['','web10-v1'].includes(variant)||!Number.isInteger(expiry)||expiry<Math.floor(Date.now()/1000)||!equal(url.searchParams.get('sig'),hmac(id+'|'+slot+'|'+expiry+(variant?'|'+variant:'')))){res.writeHead(403).end();return;}
         const row=db.prepare('SELECT a.flip,c.reference_path,c.first_path,c.second_path FROM assignments a JOIN cases c ON c.id=a.case_id WHERE a.id=?').get(id);
         if(!row){res.writeHead(404).end();return;}
         const file=slot==='reference'?row.reference_path:((slot==='A')!==!!row.flip?row.first_path:row.second_path);
-        streamFile(req,res,file);return;
+        const resolved=variant==='web10-v1'?deliveryMap('study-web-media.json')[file]:file;
+        if(!resolved||!fs.existsSync(resolved)){res.writeHead(404).end();return;}
+        streamFile(req,res,resolved);return;
       }
       if(!['GET','HEAD'].includes(req.method)){res.writeHead(405).end();return;}
       const files={'/':'index.html','/index.html':'index.html','/app.js':'app.js','/styles.css':'styles.css','/config.js':'config.js'};

@@ -17,6 +17,6 @@ CREATE TABLE IF NOT EXISTS assignments(
 );
 CREATE TABLE IF NOT EXISTS votes(
   assignment_id TEXT PRIMARY KEY REFERENCES assignments(id), choice TEXT NOT NULL CHECK(choice IN('A','B')),
-  elapsed_ms INTEGER NOT NULL DEFAULT 0, updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  elapsed_ms INTEGER NOT NULL DEFAULT 0, media_profile TEXT NOT NULL DEFAULT 'original', updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 CREATE INDEX IF NOT EXISTS participant_assignments ON assignments(participant_id,ordinal);
