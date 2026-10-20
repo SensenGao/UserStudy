@@ -33,5 +33,8 @@ async function loop(){if(state.looping||!state.playing)return;const token=state.
 clock.onended=loop;
 function animate(){if(state.playing&&state.ready&&!state.looping){const time=Math.min(clock.currentTime,end());$('#timeline').value=time;$('#time').textContent=time.toFixed(2)+' / '+end().toFixed(2)+' s';if(time>=end()-.02||clock.ended)loop();else for(const v of [videos[0],videos[2]])if(Math.abs(v.currentTime-time)>.08&&!v.seeking)v.currentTime=Math.min(time,v.duration-.001);}requestAnimationFrame(animate);}requestAnimationFrame(animate);
 language();
-try{const meta=await request('/api/meta');if(!meta.active){$('#status').textContent=t('waiting');$('#start').textContent=t('loading');}else{$('#start').disabled=false;const saved=identity();$('#start').textContent=t(saved.token?'resume':'start');}}catch{$('#status').textContent=t('waiting');}
+let availabilityTimer;
+async function availability(){clearTimeout(availabilityTimer);if(state.session)return;try{const meta=await request('/api/meta');$('#start').disabled=!meta.active;$('#status').textContent=meta.active?'':t('waiting');$('#start').textContent=t(meta.active?(identity().token?'resume':'start'):'loading');if(!meta.active)availabilityTimer=setTimeout(availability,15000);}catch{$('#start').disabled=true;$('#status').textContent=t('waiting');availabilityTimer=setTimeout(availability,15000);}}
+await availability();
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!state.session)availability();});
 globalThis.__study={get state(){return state;},select,play,pause,seek,vote,complete};
