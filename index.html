@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="description" content="匿名视频质量评估。对照同一参考视频，选择你更喜欢的版本。">
-  <title>Video Quality Study</title><link rel="stylesheet" href="styles.css?v=20261020-full-buffer">
+  <title>Video Quality Study</title><link rel="stylesheet" href="styles.css?v=20261020-connection">
 </head>
 <body>
   <header><a class="brand" href="./"><span class="mark">V</span><span>VIDEO QUALITY <b>STUDY</b></span></a><div class="header-end"><span id="participant-id"></span><button id="language" aria-label="Switch language">EN</button></div></header>
@@ -17,6 +17,7 @@
       <button id="start" class="primary" disabled data-i18n="loading">正在准备…</button>
       <p class="privacy" data-i18n="privacy">无需注册。系统分配匿名编号，选择会自动保存；再次打开可继续。</p>
       <p id="status" role="status"></p>
+      <button id="retry-connection" hidden>立即重试 / Retry now</button>
     </section>
     <section id="study" hidden>
       <div class="study-heading"><div><p class="eyebrow" data-i18n="studyEyebrow">YOUR PERSPECTIVE, ONE PAIR AT A TIME</p><h1><span data-i18n="pair">第</span> <span id="trial-number">01</span> <span class="total">/ 10</span></h1></div><div class="progress-copy"><span id="progress-text"></span><div class="progress-track"><i id="progress-bar"></i></div></div></div>
@@ -37,6 +38,6 @@
     <section id="complete" class="complete" hidden><span class="complete-mark">✓</span><p class="eyebrow">10 / 10 · SAVED</p><h1 data-i18n="thanks">感谢你的观察。</h1><p data-i18n="doneCopy">你的 10 组选择已全部保存。感谢你参与这次视频质量评估。</p><p id="complete-id"></p><div class="complete-actions"><button id="review" class="primary" data-i18n="review">回看我的选择</button><button id="restart-complete" data-i18n="restart">再填写一份</button></div><p class="restart-note" data-i18n="restartNote">已有答案会保留；重新填写会分配新编号和10组视频。</p><p id="restart-status" role="status"></p></section>
   </main>
   <footer><span>VIDEO QUALITY STUDY</span><span data-i18n="footer">匿名参与 · 自动保存 · 约 3–5 分钟</span></footer>
-  <script src="config.js"></script><script type="module" src="app.js?v=20261020-full-buffer"></script>
+  <script src="config.js?v=20261020-connection"></script><script type="module" src="app.js?v=20261020-connection"></script>
 </body>
 </html>

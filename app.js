@@ -1,5 +1,6 @@
 const $=s=>document.querySelector(s);
-const api=globalThis.STUDY_API_BASE||'';
+let api=globalThis.STUDY_API_BASE||'';
+const apiBases=[...new Set([api,...(globalThis.STUDY_API_BASES||[])])];
 const key='video-quality-study-participant-v1';
 const videos=[$('#reference-video'),$('#a-video'),$('#b-video')],clock=videos[1];
 let state={session:null,index:0,ready:false,playing:false,buffering:false,resuming:false,looping:false,zoom:1,origin:[50,50],load:0,controller:null,started:0,saving:false,restarting:false};
@@ -10,7 +11,20 @@ const t=k=>(lang==='en'?en:zh)[k];
 function language(){document.documentElement.lang=lang==='en'?'en':'zh-CN';document.querySelectorAll('[data-i18n]').forEach(e=>{const value=t(e.dataset.i18n);if(e.dataset.i18n==='title')e.innerHTML=value;else e.textContent=value;});$('#language').textContent=lang==='en'?'中文':'EN';if(state.session)renderProgress();if(!$('#start').disabled)$('#start').textContent=t(state.session?'resume':'start');}
 $('#language').onclick=()=>{lang=lang==='en'?'zh':'en';localStorage.setItem('video-study-language',lang);language();};
 function identity(){let saved;try{saved=JSON.parse(localStorage.getItem(key));}catch{}if(!saved?.resume_key){saved={resume_key:crypto.randomUUID().replaceAll('-','')+crypto.randomUUID().replaceAll('-','')};localStorage.setItem(key,JSON.stringify(saved));}return saved;}
-async function request(path,body){const local=identity();const r=await fetch(api+path,{method:body?'POST':'GET',headers:{...(body?{'Content-Type':'application/json'}:{}),...(local.token?{Authorization:'Bearer '+local.token}:{})},...(body?{body:JSON.stringify(body)}:{})});const d=await r.json();if(!r.ok)throw Error(d.error||'Request failed');return d;}
+async function request(path,body){
+ const local=identity();
+ for(const base of [...new Set([api,...apiBases])]){
+  let r;
+  try{r=await fetch(base+path,{method:body?'POST':'GET',signal:AbortSignal.timeout(8000),headers:{...(body?{'Content-Type':'application/json'}:{}),...(local.token?{Authorization:'Bearer '+local.token}:{})},...(body?{body:JSON.stringify(body)}:{})});}
+  catch{continue;}
+  // Retry gateway/transport failures through another route to the same database.
+  if(r.status>=500)continue;
+  let d;try{d=await r.json();}catch{continue;}
+  if(!r.ok)throw Error(d.error||'Request failed');
+  api=base;return d;
+ }
+ throw Error(lang==='en'?'Cannot reach the study server. Please retry.':'暂时无法连接评估后台，请重试。');
+}
 // Keep complete clips in memory: playback never depends on a live CDN stream.
 // At most the current and next triplet are retained, with shared in-flight work.
 const mediaCache=new Map(),mediaJobs=new Map();
@@ -102,7 +116,8 @@ for(const v of videos){v.addEventListener('waiting',bufferGroup);v.addEventListe
 function animate(){if(state.playing&&state.ready&&!state.looping){const time=Math.min(clock.currentTime,end());$('#timeline').value=time;$('#time').textContent=time.toFixed(2)+' / '+end().toFixed(2)+' s';if(time>=end()-.02||clock.ended)loop();else if(state.buffering)resumeGroup();else if(!state.resuming){if(videos.some(v=>v.readyState<3))bufferGroup();else for(const v of [videos[0],videos[2]])if(Math.abs(v.currentTime-time)>.08&&!v.seeking)v.currentTime=Math.min(time,v.duration-.001);}}requestAnimationFrame(animate);}requestAnimationFrame(animate);
 language();
 let availabilityTimer;
-async function availability(){clearTimeout(availabilityTimer);if(state.session)return;try{const meta=await request('/api/meta');$('#start').disabled=!meta.active;$('#status').textContent=meta.active?'':t('waiting');$('#start').textContent=t(meta.active?(identity().token?'resume':'start'):'loading');if(!meta.active)availabilityTimer=setTimeout(availability,15000);}catch{$('#start').disabled=true;$('#status').textContent=t('waiting');availabilityTimer=setTimeout(availability,15000);}}
+async function availability(){clearTimeout(availabilityTimer);if(state.session)return;$('#retry-connection').hidden=true;try{const meta=await request('/api/meta');$('#start').disabled=!meta.active;$('#status').textContent=meta.active?'':t('waiting');$('#start').textContent=t(meta.active?(identity().token?'resume':'start'):'loading');if(!meta.active)availabilityTimer=setTimeout(availability,15000);}catch{$('#start').disabled=true;$('#status').textContent=lang==='en'?'Cannot reach the study server. Retrying automatically…':'暂时无法连接评估后台，正在自动重试…';$('#retry-connection').hidden=false;availabilityTimer=setTimeout(availability,5000);}}
+$('#retry-connection').onclick=availability;
 await availability();
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!state.session)availability();});
 globalThis.__study={get state(){return state;},select,play,pause,seek,vote,complete};

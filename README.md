@@ -35,6 +35,8 @@ Optional `prompts` in the private manifest maps case IDs to generation prompt te
 
 `config.js` points the static GitHub Pages frontend at the study API. Local previews use the same-origin API. The static frontend alone does not allocate trials or save votes; the backend and persistent storage must remain online. A temporary public tunnel is suitable for reviewing the site; long-running data collection should use a stable HTTPS host or a named tunnel with a fixed domain.
 
+`STUDY_API_BASES` can specify alternate routes to the same backend and database. Requests try the current route first, with an eight-second timeout and failover on gateway or network errors. A connection failure is displayed separately from a study that is not yet active, with automatic and manual retry.
+
 ## Validate and export
 
 ```sh
