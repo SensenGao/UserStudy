@@ -1,0 +1,12 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import {DatabaseSync} from 'node:sqlite';
+const root=process.env.STUDY_PRIVATE_ROOT;
+if(!root)throw Error('Set STUDY_PRIVATE_ROOT to the private data directory');
+const db=new DatabaseSync(path.join(root,'study.sqlite'),{readOnly:true});
+const rows=db.prepare('SELECT p.id AS participant_id,a.case_id,a.ordinal,a.flip,v.choice,v.elapsed_ms,v.updated_at FROM participants p JOIN assignments a ON a.participant_id=p.id LEFT JOIN votes v ON v.assignment_id=a.id ORDER BY p.created_at,a.ordinal').all();
+const result=rows.map(({flip,...r})=>({...r,method_A:flip?'official':'ours',method_B:flip?'ours':'official',chosen_method:r.choice?((r.choice==='A')!==!!flip?'ours':'official'):null}));
+const out=process.argv[2];
+if(!out)throw Error('Pass an output JSON path outside the public repository');
+fs.writeFileSync(out,JSON.stringify({exported_at:new Date().toISOString(),rows:result},null,2)+'\n',{mode:0o600});
+db.close();console.log('Exported',result.length,'assigned comparisons');

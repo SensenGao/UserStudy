@@ -1,0 +1,7 @@
+.git
+.env
+private
+media
+evidence
+node_modules
+*.sqlite*
